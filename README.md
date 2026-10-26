@@ -1,22 +1,22 @@
 # Kubernetes Deployment of a Java Web Application
 
-A hands-on Kubernetes project demonstrating application deployment, replica management, service networking, and application verification using Kubernetes manifests and `kubectl`.
+A hands-on Kubernetes project demonstrating application deployment, replica management, service networking, and application verification using Kubernetes YAML manifests and `kubectl`.
 
 ## Architecture
 
 ```mermaid
 flowchart TB
     U["User / Web Browser"]
-    NP["Kubernetes NodePort<br/>NodePort: 30080"]
-    S["Service<br/>portfolio-svc<br/>Port: 80"]
+    N["Kubernetes Node<br/>NodePort: 30080"]
+    S["NodePort Service<br/>portfolio-svc<br/>Port: 80"]
     D["Deployment<br/>portfolio-deployment<br/>3 replicas"]
     P1["Application Pod 1"]
     P2["Application Pod 2"]
     P3["Application Pod 3"]
 
-    U -->|"HTTP :30080"| NP
-    NP --> S
-    S -->|"Selects matching Pods"| P1
+    U -->|"HTTP :30080"| N
+    N --> S
+    S --> P1
     S --> P2
     S --> P3
 
@@ -31,23 +31,17 @@ flowchart TB
         P2
         P3
     end
-
-    classDef entry fill:#dbeafe,stroke:#2563eb,color:#172554
-    classDef service fill:#ccfbf1,stroke:#0f766e,color:#134e4a
-    classDef workload fill:#ede9fe,stroke:#7c3aed,color:#4c1d95
-
-    class U,NP entry
-    class S service
-    class D,P1,P2,P3 workload
 ```
 
-**Request flow:** Browser → NodePort → Service → Application Pods.
+**Request flow:** User browser → Kubernetes NodePort → Service → Application Pods.
 
-The Deployment maintains the desired replica count. The Service provides a stable network endpoint and selects matching Pods. The cluster used for this exercise contained a control-plane node and a worker node.
+The Deployment manages the desired number of replicas. The Service provides a stable network endpoint and selects matching Pods.
+
+The cluster information observed during the exercise included a control-plane node and a worker node. The exact placement of the application Pods is not specified.
 
 ## Project Configuration
 
-| Component | Details |
+| Component | Configuration |
 |---|---|
 | Namespace | `project-1` |
 | Deployment | `portfolio-deployment` |
@@ -56,16 +50,15 @@ The Deployment maintains the desired replica count. The Service provides a stabl
 | Service type | NodePort |
 | Service port | 80 |
 | NodePort | 30080 |
-| Configuration file | `manifest.yaml` |
-| Kubernetes version shown | v1.30.14 |
+| Kubernetes version observed | v1.30.14 |
 
-## Technology Stack
+## Technologies Used
 
 - Kubernetes
 - `kubectl`
 - YAML manifests
 - Java-based web application
-- Kubernetes Deployments, Pods, Namespaces and Services
+- Kubernetes Deployments, ReplicaSets, Pods, Namespaces and Services
 
 ## Implementation
 
@@ -75,21 +68,23 @@ The Deployment maintains the desired replica count. The Service provides a stabl
 kubectl create namespace project-1
 ```
 
-### 2. Apply the Kubernetes manifest
+### 2. Deploy the application
+
+Apply the Kubernetes manifest to create the Deployment and Service.
 
 ```bash
 kubectl apply -f manifest.yaml -n project-1
 ```
 
-The command created the `portfolio-deployment` Deployment and `portfolio-svc` Service.
+The command output confirmed the creation of `portfolio-deployment` and `portfolio-svc`.
 
-### 3. Verify the application Pods
+### 3. Verify the Pods
 
 ```bash
 kubectl get pods -n project-1
 ```
 
-The output showed three Pods in the `Running` state, each with `1/1` containers ready and zero restarts at the time of verification.
+The observed output showed three Pods in the `Running` state, each with `1/1` containers ready and zero restarts at the time of verification.
 
 ### 4. Verify Kubernetes resources
 
@@ -101,53 +96,66 @@ The results confirmed:
 
 - Three desired, current and ready replicas in the ReplicaSet.
 - Three ready and available Deployment replicas.
-- A NodePort Service exposing port `80` through node port `30080`.
+- A NodePort Service mapping service port `80` to node port `30080`.
 
-### 5. Test browser access
+### 5. Access the application
 
-The application was accessed using the reachable Kubernetes node IP and NodePort.
+The application was accessed through a web browser using the reachable Kubernetes node IP and NodePort.
 
 ```text
 http://<NODE-IP>:30080
 ```
 
-Replace `<NODE-IP>` with the appropriate node IP address. Access depends on the cluster networking and firewall or security-group configuration.
+Replace `<NODE-IP>` with the appropriate reachable node IP. Access depends on cluster networking and the applicable firewall or security-group rules.
+
+## Screenshots
+
+### 1. Application Running in Browser
+
+The browser screenshot demonstrates access to the application through the Kubernetes NodePort endpoint.
+
+![Java web application running in browser](screenshots/applicationbrowser.png)
+
+### 2. Kubernetes Terminal Output
+
+Terminal evidence from the deployment exercise, showing Kubernetes commands and resource information.
+
+![Kubernetes terminal output](screenshots/terminal.png)
 
 ## Results
 
-- Successfully applied Kubernetes Deployment and Service manifests.
+- Applied the Kubernetes Deployment and Service manifests successfully.
 - Verified three running application Pods.
-- Confirmed the Deployment had three ready and available replicas.
+- Confirmed three ready and available Deployment replicas.
 - Verified the NodePort Service configuration.
-- Confirmed application access through a web browser.
+- Accessed the application through a web browser.
 
 ## Key Learnings
 
 - Deploying workloads using Kubernetes YAML manifests.
-- Understanding Deployment and ReplicaSet responsibilities.
+- Understanding Deployments and ReplicaSets.
 - Understanding how Services expose applications and select Pods.
 - Working with namespaces and inspecting Kubernetes resources.
-- Using `kubectl` to verify application health and deployment status.
+- Using `kubectl` to verify application and deployment status.
 
 ## Repository Structure
 
 ```text
 kubernetes-java-webapp/
 ├── manifest.yaml
-└── README.md
+├── README.md
+└── screenshots/
+    ├── applicationbrowser.png
+    ├── terminal-verification.png
+    └── terminal.png
 ```
 
-| File | Description |
-|---|---|
-| `manifest.yaml` | Kubernetes Deployment and Service configuration |
-| `README.md` | Project documentation and architecture |
+## Project Scope
 
-## Scope and Notes
+This project was completed as a practical exercise using a pre-written Kubernetes manifest. The work focused on applying the configuration, verifying Kubernetes resources and replicas, and testing application accessibility.
 
-This project was completed as a practical exercise using a pre-written Kubernetes manifest. The work focused on applying the configuration, verifying the resources and replicas, and testing application access.
-
-The architecture diagram is a logical representation of the request flow; it does not specify the individual node hosting each Pod.
+The documentation reflects the observed results and does not claim that the cluster or manifest was created independently from scratch.
 
 ---
 
-**Project focus:** Kubernetes fundamentals · Workload management · Service networking · Deployment verification
+**Project focus:** Kubernetes fundamentals · Deployment management · Service networking · Application verification
